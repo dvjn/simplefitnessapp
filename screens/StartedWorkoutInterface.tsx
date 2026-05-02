@@ -1595,9 +1595,10 @@ export default function StartedWorkoutInterface() {
   const playSound = async () => {
     try {
       const player = createAudioPlayer(require('../assets/sounds/switch.mp3'));
-      player.setOnPlaybackStatusUpdate(async (status) => {
+      const subscription = player.addListener('playbackStatusUpdate', async (status) => {
         if (status.isLoaded && status.didJustFinish) {
-          await player.release();
+          player.remove();
+          subscription.remove();
         }
       });
       await player.play();
