@@ -3,6 +3,10 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const defaultconfig = getDefaultConfig(__dirname);
 
-defaultconfig.resolver.assetExts.push("db");
+for (const extension of ['db', 'wasm']) {
+  if (!defaultconfig.resolver.assetExts.includes(extension)) {
+    defaultconfig.resolver.assetExts.push(extension);
+  }
+}
 
 module.exports = defaultconfig;

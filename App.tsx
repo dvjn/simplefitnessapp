@@ -1,12 +1,12 @@
   // App.tsx
   import React, {useState, useEffect, useRef } from 'react';
   import { View, ActivityIndicator, StatusBar, StyleSheet, Pressable, Text, Platform } from 'react-native'; // Import Platform
-  import * as FileSystem from 'expo-file-system';
-  import { SQLiteProvider} from 'expo-sqlite';
+  import * as FileSystem from 'expo-file-system/legacy';
+  import { SQLiteProvider, useSQLiteContext} from 'expo-sqlite';
   import { Asset } from 'expo-asset';
   import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
   import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
-  import Ionicons from 'react-native-vector-icons/Ionicons';
+  import Ionicons from '@expo/vector-icons/Ionicons';
   import Home from './screens/Home'; // Assuming you have a Home screen component
   import Workouts from './screens/Workouts';
   import CreateWorkout from './screens/CreateWorkout';
@@ -35,10 +35,12 @@
   import Difficulty from './screens/Difficulty';
   import Template from './screens/Template';
   import TemplateDetails from './screens/TemplateDetails';
-  import * as Notifications from 'expo-notifications';
-  import { useRecurringWorkouts } from './utils/recurringWorkoutUtils';
-  import { checkAndSyncPermissions } from './utils/notificationUtils';
-  import { AppState } from 'react-native';
+   import * as Notifications from 'expo-notifications';
+   import { useRecurringWorkouts } from './utils/recurringWorkoutUtils';
+   import { checkAndSyncPermissions } from './utils/notificationUtils';
+   import { addRecurringTable, createUpdateTriggers } from './utils/addRecurringTable';
+   import { addTables } from './utils/addTemplateTable';
+   import { AppState } from 'react-native';
   import GraphsWorkoutDetails from './screens/GraphsWorkoutDetails';
 
 
@@ -328,26 +330,27 @@
 // First, create a component that will handle the recurring workout checks
 function RecurringWorkoutManager() {
   const { checkRecurringWorkouts } = useRecurringWorkouts();
+  const db = useSQLiteContext();
   const appState = useRef(AppState.currentState);
   const initialCheckDone = useRef(false);
 
   useEffect(() => {
-    // Function to check workouts and publish event
-    const checkAndNotify = async () => {
+    const setupAndCheck = async () => {
       if (!initialCheckDone.current) {
+        try {
+          await addRecurringTable(db);
+          await createUpdateTriggers(db);
+        } catch (e) {
+          console.error('Error setting up recurring tables:', e);
+        }
         await checkRecurringWorkouts();
-        // Publish event to notify MyCalendar to refresh
         console.log('Initial recurring workout check triggered and event published');
         initialCheckDone.current = true;
       }
     };
     
-    checkAndNotify();
-    
-    // Set up listener for app returning to foreground
-   
-
-  }, [checkRecurringWorkouts]);
+    setupAndCheck();
+  }, [checkRecurringWorkouts, db]);
 
   return null;
 }
@@ -460,6 +463,8 @@ const AppContent = () => {
         await Notifications.setNotificationHandler({
           handleNotification: async () => ({
             shouldShowAlert: true,
+            shouldShowBanner: true,
+            shouldShowList: true,
             shouldPlaySound: true,
             shouldSetBadge: false,
           }),

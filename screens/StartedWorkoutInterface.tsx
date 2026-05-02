@@ -19,7 +19,7 @@ import {
   StatusBar
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -28,7 +28,7 @@ import * as Notifications from 'expo-notifications';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useSettings } from '../context/SettingsContext';
 import { loadRestTimerPreferences, saveRestTimerPreferences } from '../utils/startedWorkoutPreferenceUtils';
-import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
+import { setAudioModeAsync, createAudioPlayer, type AudioPlayer } from 'expo-audio';
 import { 
   useTimerPersistence, 
   createTimerState, 
@@ -316,6 +316,8 @@ export default function StartedWorkoutInterface() {
           
           return {
             shouldShowAlert: true,
+            shouldShowBanner: true,
+            shouldShowList: true,
             shouldPlaySound: notificationType === 'rest_complete',
             shouldSetBadge: false,
           };
@@ -1577,11 +1579,10 @@ export default function StartedWorkoutInterface() {
   useEffect(() => {
     const configureAudio = async () => {
       try {
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          interruptionModeIOS: InterruptionModeIOS.MixWithOthers,
-          interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
-          playThroughEarpieceAndroid: false,
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          interruptionMode: 'mixWithOthers',
+          shouldRouteThroughEarpiece: false,
         });
       } catch (error) {
         console.error("Error configuring audio mode: ", error);
@@ -1592,17 +1593,14 @@ export default function StartedWorkoutInterface() {
   }, []);
 
   const playSound = async () => {
-    
     try {
-      const { sound } = await Audio.Sound.createAsync(
-         require('../assets/sounds/switch.mp3')
-      );
-      sound.setOnPlaybackStatusUpdate(async (status) => {
+      const player = createAudioPlayer(require('../assets/sounds/switch.mp3'));
+      player.setOnPlaybackStatusUpdate(async (status) => {
         if (status.isLoaded && status.didJustFinish) {
-          await sound.unloadAsync();
+          await player.release();
         }
       });
-      await sound.playAsync();
+      await player.play();
     } catch (error) {
         console.log('Error playing sound', error);
     }

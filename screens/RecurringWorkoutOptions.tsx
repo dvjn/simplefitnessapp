@@ -5,7 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { WorkoutLogStackParamList } from '../App';
@@ -26,6 +26,8 @@ export default function RecurringWorkoutOptions() {
   useEffect(() => {
     const setupDatabase = async () => {
       try {
+        // Tables are now created at app startup in RecurringWorkoutManager
+        // This useEffect is kept for backward compatibility
         await addRecurringTable(db);
         await createUpdateTriggers(db);
         console.log('Recurring workouts database setup complete');
@@ -35,7 +37,7 @@ export default function RecurringWorkoutOptions() {
     };
 
     setupDatabase();
-  }, []);
+  }, [db]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>

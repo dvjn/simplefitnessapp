@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSettings } from '../context/SettingsContext';
 import { useTheme } from '../context/ThemeContext';

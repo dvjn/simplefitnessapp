@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';

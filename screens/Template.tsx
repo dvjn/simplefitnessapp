@@ -9,7 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import TemplateList from '../components/TemplateList';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { WorkoutStackParamList } from '../App';
 import { StackNavigationProp } from '@react-navigation/stack';
